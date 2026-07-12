@@ -1,0 +1,601 @@
+{
+  "info": {
+    "name": "AgencyHub API",
+    "description": "Postman collection for the AgencyHub backend API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/status",
+          "host": ["{{base_url}}"],
+          "path": ["api","status"]
+        }
+      }
+    },
+    {
+      "name": "Auth: Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"abdullahdevdesign@gmail.com\",\n  \"password\": \"123456789\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["api","auth","login"]
+        }
+      }
+    },
+    {
+      "name": "Auth: Verify Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const response = pm.response.json();",
+              "if (response.accessToken) {",
+              "  pm.environment.set('access_token', response.accessToken);",
+              "  console.log('Saved accessToken to environment variable access_token');",
+              "} else {",
+              "  console.log('No accessToken found in response');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"abdullahdevdesign@gmail.com\",\n  \"otp\": \"123456\",\n  \"passphrase\": \"agency-secure-vault-2026\",\n  \"userId\": \"owner-001\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/verify-login",
+          "host": ["{{base_url}}"],
+          "path": ["api","auth","verify-login"]
+        }
+      }
+    },
+    {
+      "name": "Auth: Verify Passphrase",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"passphrase\": \"agency-secure-vault-2026\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/auth/verify-passphrase",
+          "host": ["{{base_url}}"],
+          "path": ["api","auth","verify-passphrase"]
+        }
+      }
+    },
+    {
+      "name": "Auth: Send OTP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"abdullahdevdesign@gmail.com\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/auth/send-otp",
+          "host": ["{{base_url}}"],
+          "path": ["api","auth","send-otp"]
+        }
+      }
+    },
+    {
+      "name": "Auth: Session",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/auth/session",
+          "host": ["{{base_url}}"],
+          "path": ["api","auth","session"]
+        }
+      }
+    },
+    {
+      "name": "Auth: Signup",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"invitee@example.com\",\n  \"password\": \"InvitePass123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["api","auth","signup"]
+        }
+      }
+    },
+    {
+      "name": "Auth: Forgot Password",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"abdullahdevdesign@gmail.com\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/auth/forgot-password",
+          "host": ["{{base_url}}"],
+          "path": ["api","auth","forgot-password"]
+        }
+      }
+    },
+    {
+      "name": "Auth: Change Password",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currentPassword\": \"123456789\",\n  \"newPassword\": \"NewPass1234\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/change-password",
+          "host": ["{{base_url}}"],
+          "path": ["api","auth","change-password"]
+        }
+      }
+    },
+    {
+      "name": "Auth: Update Profile",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"full_name\": \"New Name\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/auth/update-profile",
+          "host": ["{{base_url}}"],
+          "path": ["api","auth","update-profile"]
+        }
+      }
+    },
+    {
+      "name": "Clients: List",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/clients",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients"]
+        }
+      }
+    },
+    {
+      "name": "Clients: Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Acme Company\",\n  \"email\": \"client@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/clients",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients"]
+        }
+      }
+    },
+    {
+      "name": "Clients: Invite",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"invitee@example.com\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/clients/invite",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","invite"]
+        }
+      }
+    },
+    {
+      "name": "Clients: Status",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"active\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}","status"]
+        }
+      }
+    },
+    {
+      "name": "Clients: Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}"]
+        }
+      }
+    },
+    {
+      "name": "Projects: List by Client",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}/projects",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}","projects"]
+        }
+      }
+    },
+    {
+      "name": "Projects: Add Milestone",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Design Phase\",\n  \"amount\": 1500,\n  \"status\": \"pending\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}/projects",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}","projects"]
+        }
+      }
+    },
+    {
+      "name": "Project Milestone: Change Status",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"paid\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}/projects/{{milestone_id}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}","projects","{{milestone_id}}","status"]
+        }
+      }
+    },
+    {
+      "name": "Messages: List",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}/messages",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}","messages"]
+        }
+      }
+    },
+    {
+      "name": "Messages: Send",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"message\": \"Hello client, your milestone is ready.\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}/messages",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}","messages"]
+        }
+      }
+    },
+    {
+      "name": "Staff: List",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/staff",
+          "host": ["{{base_url}}"],
+          "path": ["api","staff"]
+        }
+      }
+    },
+    {
+      "name": "Staff: Provision",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"staff@example.com\",\n  \"role\": \"staff\",\n  \"full_name\": \"Staff Member\",\n  \"clientIds\": [\"{{client_id}}\"]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/staff/provision",
+          "host": ["{{base_url}}"],
+          "path": ["api","staff","provision"]
+        }
+      }
+    },
+    {
+      "name": "Staff: Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/staff/{{staff_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api","staff","{{staff_id}}"]
+        }
+      }
+    },
+    {
+      "name": "Client Staff: List",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}/staff",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}","staff"]
+        }
+      }
+    },
+    {
+      "name": "Client Staff: Assign",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"staff_id\": \"{{staff_id}}\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}/staff",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}","staff"]
+        }
+      }
+    },
+    {
+      "name": "Next Number",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/next-number/{{type}}",
+          "host": ["{{base_url}}"],
+          "path": ["api","next-number","{{type}}"]
+        }
+      }
+    },
+    {
+      "name": "Quotations: List",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/quotations",
+          "host": ["{{base_url}}"],
+          "path": ["api","quotations"]
+        }
+      }
+    },
+    {
+      "name": "Quotation: Get",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/quotations/{{quotation_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api","quotations","{{quotation_id}}"]
+        }
+      }
+    },
+    {
+      "name": "Quotation: Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"client_id\": \"{{client_id}}\",\n  \"title\": \"Project Quote\",\n  \"line_items\": [{\n    \"description\": \"Design work\",\n    \"quantity\": 1,\n    \"unit_price\": 1200\n  }],\n  \"tax_percent\": 10,\n  \"valid_until\": \"2026-08-11\",\n  \"notes\": \"Thank you.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/quotations",
+          "host": ["{{base_url}}"],
+          "path": ["api","quotations"]
+        }
+      }
+    },
+    {
+      "name": "Quotation: Update Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"sent\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/quotations/{{quotation_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api","quotations","{{quotation_id}}"]
+        }
+      }
+    },
+    {
+      "name": "Quotation: Convert to Invoice",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/quotations/{{quotation_id}}/convert-to-invoice",
+          "host": ["{{base_url}}"],
+          "path": ["api","quotations","{{quotation_id}}","convert-to-invoice"]
+        }
+      }
+    },
+    {
+      "name": "Invoices: List",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/invoices",
+          "host": ["{{base_url}}"],
+          "path": ["api","invoices"]
+        }
+      }
+    },
+    {
+      "name": "Invoice: Get",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/invoices/{{invoice_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api","invoices","{{invoice_id}}"]
+        }
+      }
+    },
+    {
+      "name": "Invoice: Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"client_id\": \"{{client_id}}\",\n  \"line_items\": [{\n    \"description\": \"Final delivery\",\n    \"quantity\": 1,\n    \"unit_price\": 2000\n  }],\n  \"tax_percent\": 10,\n  \"due_date\": \"2026-08-15\",\n  \"notes\": \"Payment due in 30 days.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/invoices",
+          "host": ["{{base_url}}"],
+          "path": ["api","invoices"]
+        }
+      }
+    },
+    {
+      "name": "Invoice: Update",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"paid\"\n}" },
+        "url": {
+          "raw": "{{base_url}}/api/invoices/{{invoice_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api","invoices","{{invoice_id}}"]
+        }
+      }
+    },
+    {
+      "name": "Client: Quotations",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}/quotations",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}","quotations"]
+        }
+      }
+    },
+    {
+      "name": "Client: Invoices",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/clients/{{client_id}}/invoices",
+          "host": ["{{base_url}}"],
+          "path": ["api","clients","{{client_id}}","invoices"]
+        }
+      }
+    },
+    {
+      "name": "Settings: Get",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+        "url": {
+          "raw": "{{base_url}}/api/settings",
+          "host": ["{{base_url}}"],
+          "path": ["api","settings"]
+        }
+      }
+    },
+    {
+      "name": "Settings: Save",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"settings\": {\n    \"logoUrl\": \"https://example.com/logo.png\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/settings",
+          "host": ["{{base_url}}"],
+          "path": ["api","settings"]
+        }
+      }
+    }
+  ]
+}

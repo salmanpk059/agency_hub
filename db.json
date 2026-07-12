@@ -1,0 +1,246 @@
+{
+  "profiles": [
+    {
+      "id": "owner-001",
+      "email": "abdullahdevdesign@gmail.com",
+      "role": "owner",
+      "full_name": "Abdullah",
+      "password": "123456789",
+      "onboarded_at": "2026-07-08T09:42:12.338Z",
+      "created_at": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "profile-1783750677371",
+      "email": "invitee@example.com",
+      "role": "client",
+      "full_name": "Invitee",
+      "client_id": "client-1783750677371",
+      "password": "123456789",
+      "created_at": "2026-07-11T06:17:57.371Z",
+      "onboarded_at": "2026-07-12T18:14:41.814Z"
+    },
+    {
+      "id": "staff-1783751185439",
+      "email": "staff@example.com",
+      "role": "staff",
+      "full_name": "Staff Member",
+      "password": "123456789",
+      "created_at": "2026-07-11T06:26:25.439Z",
+      "onboarded_at": "2026-07-12T18:17:39.351Z"
+    }
+  ],
+  "clients": [
+    {
+      "id": "client-1783750652024",
+      "name": "Acme Company",
+      "status": "active",
+      "created_at": "2026-07-11T06:17:32.024Z"
+    },
+    {
+      "id": "client-1783750677371",
+      "name": "Invitee (Invited)",
+      "status": "pending_signup",
+      "created_at": "2026-07-11T06:17:57.371Z"
+    }
+  ],
+  "audit_logs": [],
+  "audit_log": [
+    {
+      "id": "audit-1783503732372-cxwfe2452",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-08T09:42:12.341Z"
+    },
+    {
+      "id": "audit-1783742046893-38oi0rrh7",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T03:54:06.892Z"
+    },
+    {
+      "id": "audit-1783743655983-r8ywm7kkf",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T04:20:55.982Z"
+    },
+    {
+      "id": "audit-1783743691528-cgc2ywc53",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T04:21:31.527Z"
+    },
+    {
+      "id": "audit-1783743748057-n3saqkn8j",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T04:22:28.056Z"
+    },
+    {
+      "id": "audit-1783749043381-vv0lgmqba",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T05:50:43.380Z"
+    },
+    {
+      "id": "audit-1783749183539-ol7u9pnyl",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T05:53:03.539Z"
+    },
+    {
+      "id": "audit-1783749485022-buih7d1ik",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T05:58:05.021Z"
+    },
+    {
+      "id": "audit-1783749685102-gc2kzj1cn",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T06:01:25.102Z"
+    },
+    {
+      "id": "audit-1783749958970-adt65eu40",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T06:05:58.969Z"
+    },
+    {
+      "id": "audit-1783750041019-7abblny8w",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T06:07:21.018Z"
+    },
+    {
+      "id": "audit-1783750223731-sk4gohe39",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T06:10:23.731Z"
+    },
+    {
+      "id": "audit-1783750553824-ui34k007y",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T06:15:53.824Z"
+    },
+    {
+      "id": "audit-1783751056875-9mkkfflgl",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T06:24:16.874Z"
+    },
+    {
+      "id": "audit-1783751063236-fahyp8wgb",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "login",
+      "target": "Logged into system",
+      "timestamp": "2026-07-11T06:24:23.236Z"
+    },
+    {
+      "id": "audit-1783751319027-z6kn5ylvg",
+      "actor_id": "owner-001",
+      "actor_email": "abdullahdevdesign@gmail.com",
+      "action": "quotation created",
+      "target": "Created quotation Q-2026-0001 for client",
+      "timestamp": "2026-07-11T06:28:39.027Z"
+    }
+  ],
+  "quotations": [
+    {
+      "client_id": "client-1783750652024",
+      "quote_number": "Q-2026-0001",
+      "title": "Project Quote",
+      "line_items": [
+        {
+          "description": "Design work",
+          "quantity": 1,
+          "unit_price": 1200
+        }
+      ],
+      "subtotal": 1200,
+      "tax_percent": 10,
+      "tax_amount": 120,
+      "total": 1320,
+      "status": "draft",
+      "valid_until": "2026-08-11",
+      "notes": "Thank you.",
+      "created_at": "2026-07-11T06:28:39.026Z",
+      "updated_at": "2026-07-11T06:28:39.026Z",
+      "id": "quote-1783751319026"
+    },
+    {
+      "client_id": "5a636c23-988a-46e4-894b-70ef22e1808e",
+      "quote_number": "Q-2026-0001",
+      "title": "Web developer",
+      "line_items": [
+        {
+          "description": "Website developer",
+          "quantity": 1,
+          "unit_price": 99.97
+        }
+      ],
+      "subtotal": 99.97,
+      "tax_percent": 1,
+      "tax_amount": 1,
+      "total": 100.97,
+      "status": "draft",
+      "valid_until": "2026-07-16",
+      "notes": null,
+      "created_at": "2026-07-11T09:50:53.992Z",
+      "updated_at": "2026-07-11T09:50:53.992Z",
+      "id": "quote-1783763454241"
+    }
+  ],
+  "invoices": [],
+  "settings": {
+    "logoUrl": ""
+  },
+  "staff_client_access": [
+    {
+      "id": "access-1783751185439-36ro40k9n",
+      "staff_id": "staff-1783751185439",
+      "client_id": "client-1783750652024",
+      "created_at": "2026-07-11T06:26:25.439Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "milestone-1783751116893",
+      "client_id": "client-1783750652024",
+      "title": "Design Phase",
+      "amount": 1500,
+      "status": "paid",
+      "created_at": "2026-07-11T06:25:16.893Z"
+    }
+  ],
+  "messages": []
+}

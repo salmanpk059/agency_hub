@@ -1,0 +1,6 @@
+{
+  "name": "AgencyHub",
+  "description": "A client and agency management portal for tracking milestones, project status, and communication.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
