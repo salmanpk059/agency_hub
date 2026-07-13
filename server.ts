@@ -25,6 +25,22 @@ function csrfProtection(req: express.Request, res: express.Response, next: expre
     return next();
   }
   try {
+    const originUrl = new URL(origin as string);
+    const requestOrigin = originUrl.origin;
+    const requestOriginHost = originUrl.host;
+    const hostHeader = req.headers.host;
+
+    // 1. Same-Origin Check (Origin matches Host header)
+    if (hostHeader && requestOriginHost.toLowerCase() === hostHeader.toLowerCase()) {
+      return next();
+    }
+
+    // 2. Allow Netlify subdomains (both production and previews)
+    if (requestOriginHost.endsWith('.netlify.app')) {
+      return next();
+    }
+
+    // 3. Allowed explicit origins (localhost, etc.)
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3001',
@@ -32,7 +48,6 @@ function csrfProtection(req: express.Request, res: express.Response, next: expre
       process.env.ALLOWED_ORIGIN
     ].filter(Boolean) as string[];
 
-    const requestOrigin = new URL(origin as string).origin;
     if (allowedOrigins.includes(requestOrigin)) {
       return next();
     }
