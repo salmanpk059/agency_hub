@@ -386,11 +386,17 @@ export default function App() {
             await loadAdminData(savedUserId);
           }
         } else {
+          setSession(null);
+          setSupabaseAccessToken(null);
           localStorage.removeItem('agencyhub_user_id');
           localStorage.removeItem('supabase_access_token');
         }
       } catch (e) {
         console.error("Session restore failed:", e);
+        setSession(null);
+        setSupabaseAccessToken(null);
+        localStorage.removeItem('agencyhub_user_id');
+        localStorage.removeItem('supabase_access_token');
       }
     }
     setIsPageLoading(false);

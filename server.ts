@@ -73,7 +73,11 @@ const isSupabaseConfigured = !FORCE_LOCAL_DB && SUPABASE_URL.trim() !== "" && SU
 // Local OTP store for development mode (keyed by email, expires after 5 minutes)
 const localOtpStore = new Map<string, { code: string; expiresAt: number }>();
 const localSessionStore = new Map<string, string>();
-const DEV_OTP_CODE = '123456';
+const OTP_CODE_LENGTH = 6;
+
+function generateOtpCode() {
+  return crypto.randomInt(0, 10 ** OTP_CODE_LENGTH).toString().padStart(OTP_CODE_LENGTH, '0');
+}
 
 /** Server-side DB client — prefers service role to bypass RLS for API routes */
 let supabase: any = null;
@@ -1461,17 +1465,11 @@ app.post("/api/auth/login", async (req, res) => {
     }
   }
 
-  const localProfile = findLocalProfileByEmail(targetEmail);
-  if (localProfile && localProfile.password && localProfile.password === password) {
-    const localOtpCode = DEV_OTP_CODE;
-    localOtpStore.set(targetEmail, { code: localOtpCode, expiresAt: Date.now() + 5 * 60 * 1000 });
-    console.log(`[DEV] OTP for ${targetEmail}: ${localOtpCode}`);
-    res.json({ requiresVerification: true, email: targetEmail, userId: localProfile.id, role: localProfile.role || "staff", needsPassphrase: true });
-    return;
-  }
-
   if (isSupabaseConfigured && supabase) {
     try {
+      let role = "staff";
+      let userId = "";
+
       const { data, error } = await supabaseAuth.auth.signInWithPassword({
         email: targetEmail,
         password,
@@ -1483,49 +1481,52 @@ app.post("/api/auth/login", async (req, res) => {
         res.status(400).json({ error: "Invalid email or password." });
         return;
       }
-      console.log("[DIAG] login: signInWithPassword succeeded for", targetEmail, "userId=" + data.user.id);
+      userId = data.user.id;
+      console.log("[DIAG] login: signInWithPassword succeeded for", targetEmail, "userId=" + userId);
 
-      // Look up the user's role from profiles
       const { data: profile, error: profileErr } = await supabase
         .from("profiles")
         .select("role")
-        .eq("id", data.user.id)
+        .eq("id", userId)
         .maybeSingle();
 
       if (profileErr) {
         console.log("[DIAG] login: profile lookup error", profileErr.message);
       }
 
-      let role = profile?.role || "staff";
+      role = profile?.role || "staff";
       console.log("[DIAG] login: role from DB=" + (profile?.role || "null") + " sendingRole=" + role);
 
-      // NOTE: No safeguard logic here. Role determined purely from DB at this point.
-      // The owner safeguard (force role=owner, auto-repair profiles) runs ONLY after
-      // OTP+passphrase are verified — in the verify-login endpoint (step 5).
+      console.log("[DIAG] login: sending email OTP for " + targetEmail);
+      const { error: otpError } = await supabaseAuth.auth.signInWithOtp({
+        email: targetEmail,
+        options: { shouldCreateUser: false, type: "email" }
+      });
 
-      // Send real email OTP (not magic link)
-      console.log("[DIAG] login: ABOUT TO CALL signInWithOtp for " + targetEmail);
-      try {
-        const { error: otpError } = await supabaseAuth.auth.signInWithOtp({
-          email: targetEmail,
-          options: { shouldCreateUser: false, type: "email" }
-        });
-        if (otpError) {
-          console.log("[DIAG] login: signInWithOtp RETURNED ERROR:", otpError.message);
-        } else {
-          console.log("[DIAG] login: signInWithOtp SUCCEEDED for " + targetEmail);
-        }
-      } catch (otpErr: any) {
-        console.log("[DIAG] login: signInWithOtp THREW EXCEPTION:", otpErr.message);
+      if (otpError) {
+        recordLoginAttempt(targetEmail, false);
+        console.log("[DIAG] login: signInWithOtp failed for", targetEmail, otpError.message);
+        res.status(500).json({ error: "Failed to send verification code. Please try again." });
+        return;
       }
 
-      console.log("[DIAG] login: returning needsPassphrase=true role=" + role + " userId=" + data.user.id);
-      res.json({ requiresVerification: true, email: targetEmail, userId: data.user.id, role, needsPassphrase: true });
+      console.log("[DIAG] login: signInWithOtp SUCCEEDED for " + targetEmail);
+      console.log("[DIAG] login: returning needsPassphrase=true role=" + role + " userId=" + userId);
+      res.json({ requiresVerification: true, email: targetEmail, userId, role, needsPassphrase: true });
       return;
     } catch (e: any) {
       res.status(500).json({ error: "Login failed, please try again." });
       return;
     }
+  }
+
+  const localProfile = findLocalProfileByEmail(targetEmail);
+  if (localProfile && localProfile.password && localProfile.password === password) {
+    const localOtpCode = generateOtpCode();
+    localOtpStore.set(targetEmail, { code: localOtpCode, expiresAt: Date.now() + 5 * 60 * 1000 });
+    console.log(`[DEV] OTP for ${targetEmail}: ${localOtpCode}`);
+    res.json({ requiresVerification: true, email: targetEmail, userId: localProfile.id, role: localProfile.role || "staff", needsPassphrase: true });
+    return;
   }
 
   // Local fallback auth
@@ -1551,7 +1552,7 @@ app.post("/api/auth/login", async (req, res) => {
   }
 
   const localRole = localAuthProfile.role || "staff";
-  const localOtpCode = DEV_OTP_CODE;
+  const localOtpCode = generateOtpCode();
   localOtpStore.set(targetEmail, { code: localOtpCode, expiresAt: Date.now() + 5 * 60 * 1000 });
   console.log(`[DEV] OTP for ${targetEmail}: ${localOtpCode}`);
 
@@ -1576,14 +1577,22 @@ app.post("/api/auth/verify-login", async (req, res) => {
     return;
   }
 
-  const localVerifyProfile = findLocalProfileByEmail(email);
-  if (localVerifyProfile && otp === DEV_OTP_CODE) {
+  if (!isSupabaseConfigured || !supabase) {
     const dbData = getLocalData();
     const profile = dbData.profiles.find((p: any) => (p.email || "").toLowerCase() === email.toLowerCase());
     if (!profile) {
       res.status(403).json({ error: "Your account is not set up. Please contact your administrator to send an invitation." });
       return;
     }
+
+    const storedOtp = localOtpStore.get(email.toLowerCase());
+    const isValidOtp = !!storedOtp && storedOtp.code === otp && Date.now() <= storedOtp.expiresAt;
+    if (!isValidOtp) {
+      recordLoginAttempt(email, false);
+      res.status(401).json({ error: "Verification code is invalid or has expired." });
+      return;
+    }
+    localOtpStore.delete(email.toLowerCase());
 
     const isClient = profile.role === "client";
     const correctPassphrase = isClient ? process.env.CLIENT_SECURITY_PASSPHRASE : process.env.OWNER_PASSPHRASE;
@@ -1609,37 +1618,33 @@ app.post("/api/auth/verify-login", async (req, res) => {
   if (isSupabaseConfigured && supabase) {
     try {
       console.log("[DIAG] verify-login: verifying OTP for", email);
-      const isTestOtp = otp === DEV_OTP_CODE;
       let supaAccessToken: string | null = null;
       let targetUid: string | null = null;
 
-      if (!isTestOtp) {
-        const { data: otpData, error: otpError } = await supabaseAuth.auth.verifyOtp({
-          email,
-          token: otp,
-          type: "email"
-        });
+      const { data: otpData, error: otpError } = await supabaseAuth.auth.verifyOtp({
+        email,
+        token: otp,
+        type: "email"
+      });
 
-        if (otpError) {
-          recordLoginAttempt(email, false);
-          console.log("[DIAG] verify-login: OTP verification FAILED", otpError.message);
-          res.status(401).json({ error: "Verification code is invalid or has expired. Please try signing in again." });
-          return;
-        }
-        supaAccessToken = otpData?.session?.access_token || null;
-        console.log("[DIAG] verify-login: OTP verification SUCCEEDED, access_token=" + (supaAccessToken ? supaAccessToken.substring(0, 10) + "..." : "null"));
-        targetUid = userId || (await supabaseAuth.auth.getUser()).data.user?.id;
-      } else {
-        console.log('[DEV] verify-login: test OTP used, bypassing Supabase OTP verification');
-        // Try to determine target UID from request or profile lookup by email
-        targetUid = userId || null;
-        if (!targetUid) {
-          try {
-            const { data: profileLookup } = await supabase.from('profiles').select('id').eq('email', email).maybeSingle();
-            targetUid = profileLookup?.id || null;
-          } catch (plErr) {
-            console.log('[DEV] verify-login: profile lookup failed during test OTP bypass', plErr);
-          }
+      if (otpError) {
+        recordLoginAttempt(email, false);
+        console.log("[DIAG] verify-login: OTP verification FAILED", otpError.message);
+        res.status(401).json({ error: "Verification code is invalid or has expired. Please try signing in again." });
+        return;
+      }
+
+      supaAccessToken = otpData?.session?.access_token || null;
+      targetUid = otpData?.user?.id || otpData?.session?.user?.id || userId || null;
+
+      console.log("[DIAG] verify-login: OTP verification SUCCEEDED, access_token=" + (supaAccessToken ? supaAccessToken.substring(0, 10) + "..." : "null"));
+
+      if (!targetUid) {
+        try {
+          const { data: profileLookup } = await supabase.from('profiles').select('id').eq('email', email).maybeSingle();
+          targetUid = profileLookup?.id || null;
+        } catch (plErr) {
+          console.log('[DIAG] verify-login: profile lookup failed after OTP verification', plErr);
         }
       }
       console.log("[DIAG] verify-login: targetUid=" + (targetUid || "null") + " (from body userId=" + (userId || "null") + ")");
@@ -1744,15 +1749,14 @@ app.post("/api/auth/verify-login", async (req, res) => {
     }
   }
 
-  // Local fallback - verify OTP from local store (accept test OTP '123456')
+  // Local fallback - verify OTP from local store only when Supabase is unavailable
   const stored = localOtpStore.get(email.toLowerCase());
-  const isTestOtp = otp === DEV_OTP_CODE;
-  if (!(isTestOtp || (stored && stored.code === otp && Date.now() <= stored.expiresAt))) {
+  if (!(stored && stored.code === otp && Date.now() <= stored.expiresAt)) {
     recordLoginAttempt(email, false);
     res.status(401).json({ error: "Verification code is invalid or has expired." });
     return;
   }
-  if (!isTestOtp) localOtpStore.delete(email.toLowerCase()); // One-time use for real OTPs
+  localOtpStore.delete(email.toLowerCase()); // One-time use
 
   const dbData = getLocalData();
   let profile = dbData.profiles.find(
@@ -1862,14 +1866,6 @@ app.post("/api/auth/send-otp", async (req, res) => {
     res.status(400).json({ error: "Email is required." });
     return;
   }
-  const localProfile = findLocalProfileByEmail(email);
-  if (localProfile) {
-    const resendOtpCode = DEV_OTP_CODE;
-    localOtpStore.set(email.toLowerCase(), { code: resendOtpCode, expiresAt: Date.now() + 5 * 60 * 1000 });
-    console.log(`[DEV] Resent OTP for ${email}: ${resendOtpCode}`);
-    res.json({ success: true });
-    return;
-  }
   if (isSupabaseConfigured && supabase) {
     try {
       await supabaseAuth.auth.signInWithOtp({
@@ -1880,12 +1876,12 @@ app.post("/api/auth/send-otp", async (req, res) => {
       return;
     } catch (e: any) {
       console.error("Resend OTP error:", e);
-      res.status(500).json({ error: "Failed to resend verification code." });
+      res.status(500).json({ error: "Failed to send verification code by email." });
       return;
     }
   }
   // Local fallback - generate and log OTP for development
-  const resendOtpCode = DEV_OTP_CODE;
+  const resendOtpCode = generateOtpCode();
   localOtpStore.set(email.toLowerCase(), { code: resendOtpCode, expiresAt: Date.now() + 5 * 60 * 1000 });
   console.log(`[DEV] Resent OTP for ${email}: ${resendOtpCode}`);
   res.json({ success: true });
@@ -4294,4 +4290,8 @@ async function startServer() {
   });
 }
 
-startServer();
+if (process.env.NETLIFY !== "true") {
+  startServer();
+}
+
+export default app;
