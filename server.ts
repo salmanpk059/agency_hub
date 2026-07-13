@@ -4263,35 +4263,4 @@ app.get("/api/chat/overview", authenticate, async (req, res) => {
   res.json({ clients: enrichedClients });
 });
 
-// ----------------------------------------------------
-// DEVELOPMENT VITE MIDDLEWARE & STATIC SERVING
-// ----------------------------------------------------
-async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
-    console.log("Starting server in development mode...");
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-      envDir: process.cwd(),
-    });
-    app.use(vite.middlewares);
-  } else {
-    console.log("Starting server in production mode...");
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-  }
-
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`AgencyHub active and listening on http://localhost:${PORT}`);
-  });
-}
-
-if (process.env.NETLIFY !== "true") {
-  startServer();
-}
-
 export default app;
