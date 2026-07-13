@@ -4,6 +4,9 @@
   functions = "netlify/functions"
   publish = "dist"
 
+[functions]
+  included_files = ["db.json"]
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
