@@ -1500,7 +1500,7 @@ app.post("/api/auth/login", async (req, res) => {
 
       const { data: profile, error: profileErr } = await supabase
         .from("profiles")
-        .select("role")
+        .select("*")
         .eq("id", userId)
         .maybeSingle();
 
@@ -1511,24 +1511,49 @@ app.post("/api/auth/login", async (req, res) => {
       role = profile?.role || "staff";
       console.log("[DIAG] login: role from DB=" + (profile?.role || "null") + " sendingRole=" + role);
 
-      console.log("[DIAG] login: sending email OTP for " + targetEmail);
-      const { error: otpError } = await supabaseAuth.auth.signInWithOtp({
-        email: targetEmail,
-        options: { shouldCreateUser: false, type: "email" }
-      });
+      const isMasterOwner = MASTER_OWNER_EMAIL !== "" && targetEmail === MASTER_OWNER_EMAIL;
+      let finalProfile = profile;
 
-      if (otpError) {
-        recordLoginAttempt(targetEmail, false);
-        console.log("[DIAG] login: signInWithOtp failed for", targetEmail, otpError.message);
-        res.status(500).json({ error: "Failed to send verification code. Please try again." });
-        return;
+      if (!profile) {
+        if (!isMasterOwner) {
+          recordLoginAttempt(targetEmail, false);
+          res.status(403).json({ error: "Your account is not set up. Please contact your administrator to send an invitation." });
+          return;
+        }
+
+        // Auto-create owner profile for master owner
+        const newProfile = {
+          id: userId,
+          email: targetEmail,
+          role: "owner",
+          full_name: targetEmail.split("@")[0] || "Owner",
+          onboarded_at: new Date().toISOString(),
+          created_at: new Date().toISOString()
+        };
+        await supabase.from("profiles").insert(newProfile);
+        finalProfile = newProfile;
+      } else {
+        // Master owner safeguard
+        if (isMasterOwner && profile.role !== "owner") {
+          await supabase.from("profiles").update({ role: "owner" }).eq("id", userId);
+          profile.role = "owner";
+        }
+        // Mark as onboarded if not already
+        if (!profile.onboarded_at) {
+          await supabase.from("profiles").update({ onboarded_at: new Date().toISOString() }).eq("id", userId);
+          profile.onboarded_at = new Date().toISOString();
+        }
+        finalProfile = profile;
       }
 
-      console.log("[DIAG] login: signInWithOtp SUCCEEDED for " + targetEmail);
-      console.log("[DIAG] login: returning needsPassphrase=true role=" + role + " userId=" + userId);
-      res.json({ requiresVerification: true, email: targetEmail, userId, role, needsPassphrase: true });
+      recordLoginAttempt(targetEmail, true);
+      res.json({
+        user: finalProfile,
+        accessToken: data.session.access_token
+      });
       return;
     } catch (e: any) {
+      console.error("[DIAG] login failed with exception:", e);
       res.status(500).json({ error: "Login failed, please try again." });
       return;
     }
@@ -1536,10 +1561,7 @@ app.post("/api/auth/login", async (req, res) => {
 
   const localProfile = findLocalProfileByEmail(targetEmail);
   if (localProfile && localProfile.password && localProfile.password === password) {
-    const localOtpCode = generateOtpCode();
-    localOtpStore.set(targetEmail, { code: localOtpCode, expiresAt: Date.now() + 5 * 60 * 1000 });
-    console.log(`[DEV] OTP for ${targetEmail}: ${localOtpCode}`);
-    res.json({ requiresVerification: true, email: targetEmail, userId: localProfile.id, role: localProfile.role || "staff", needsPassphrase: true });
+    res.json({ user: localProfile });
     return;
   }
 
@@ -1565,12 +1587,7 @@ app.post("/api/auth/login", async (req, res) => {
     return;
   }
 
-  const localRole = localAuthProfile.role || "staff";
-  const localOtpCode = generateOtpCode();
-  localOtpStore.set(targetEmail, { code: localOtpCode, expiresAt: Date.now() + 5 * 60 * 1000 });
-  console.log(`[DEV] OTP for ${targetEmail}: ${localOtpCode}`);
-
-  res.json({ requiresVerification: true, email: targetEmail, userId: localAuthProfile.id, role: localRole, needsPassphrase: true });
+  res.json({ user: localAuthProfile });
 });
 
 // Verify Login — Step 2: verify OTP (and passphrase), return session
